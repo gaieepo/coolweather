@@ -20,7 +20,6 @@ public class HttpUtil {
                     URL url = new URL(address);
                     connection = (HttpURLConnection) url.openConnection();
                     connection.setRequestMethod("GET");
-                    connection.setRequestProperty("apikey", "1d1d1456487a821147de863ece28a40c");
                     connection.setConnectTimeout(8000);
                     connection.setReadTimeout(8000);
                     InputStream in = connection.getInputStream();

@@ -16,6 +16,7 @@ public class CoolWeatherDB {
     public static final String DB_NAME = "cool_weather";
 
     public static final int VERSION = 1;
+    public static final int UPGRADE_VERSION = 2;
 
     private static CoolWeatherDB coolWeatherDB;
 
