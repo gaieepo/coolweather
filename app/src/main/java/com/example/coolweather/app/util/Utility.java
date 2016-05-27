@@ -1,36 +1,42 @@
 package com.example.coolweather.app.util;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import com.example.coolweather.app.model.*;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Created by gaieepo on 26/5/2016.
  */
 public class Utility {
 
+    private static List<Region> regions;
+
     public synchronized static boolean handleProvincesResponse(CoolWeatherDB coolWeatherDB, String response) {
         if (!TextUtils.isEmpty(response)) {
-            List<Region> regions = null;
-            try {
-                JSONObject jsonObject = new JSONObject(response);
-                if (!jsonObject.getString("status").equals("ok"))
-                    return false;
-                JSONArray jsonArray = jsonObject.getJSONArray("city_info");
-                if (jsonArray.length() == 0)
-                    return false;
-                Gson gson = new Gson();
-                regions = gson.fromJson(jsonArray.toString(), new TypeToken<List<Region>>() {
-                }.getType());
-            } catch (Exception e) {
-                e.printStackTrace();
+            if (regions == null || regions.size() == 0) {
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    if (!jsonObject.getString("status").equals("ok"))
+                        return false;
+                    JSONArray jsonArray = jsonObject.getJSONArray("city_info");
+                    if (jsonArray.length() == 0)
+                        return false;
+                    Gson gson = new Gson();
+                    regions = gson.fromJson(jsonArray.toString(), new TypeToken<List<Region>>() {
+                    }.getType());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
 
             HashMap<String, String> provinceMap = new HashMap<>();
@@ -55,19 +61,20 @@ public class Utility {
 
     public static boolean handleCitiesResponse(String code, CoolWeatherDB coolWeatherDB, String response, int provinceId) {
         if (!TextUtils.isEmpty(response)) {
-            List<Region> regions = null;
-            try {
-                JSONObject jsonObject = new JSONObject(response);
-                if (!jsonObject.getString("status").equals("ok"))
-                    return false;
-                JSONArray jsonArray = jsonObject.getJSONArray("city_info");
-                if (jsonArray.length() == 0)
-                    return false;
-                Gson gson = new Gson();
-                regions = gson.fromJson(jsonArray.toString(), new TypeToken<List<Region>>() {
-                }.getType());
-            } catch (Exception e) {
-                e.printStackTrace();
+            if (regions == null || regions.size() == 0) {
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    if (!jsonObject.getString("status").equals("ok"))
+                        return false;
+                    JSONArray jsonArray = jsonObject.getJSONArray("city_info");
+                    if (jsonArray.length() == 0)
+                        return false;
+                    Gson gson = new Gson();
+                    regions = gson.fromJson(jsonArray.toString(), new TypeToken<List<Region>>() {
+                    }.getType());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
 
             for (Region region : regions) {
@@ -86,19 +93,20 @@ public class Utility {
 
     public static boolean handleCountiesResponse(String code, CoolWeatherDB coolWeatherDB, String response, int cityId) {
         if (!TextUtils.isEmpty(response)) {
-            List<Region> regions = null;
-            try {
-                JSONObject jsonObject = new JSONObject(response);
-                if (!jsonObject.getString("status").equals("ok"))
-                    return false;
-                JSONArray jsonArray = jsonObject.getJSONArray("city_info");
-                if (jsonArray.length() == 0)
-                    return false;
-                Gson gson = new Gson();
-                regions = gson.fromJson(jsonArray.toString(), new TypeToken<List<Region>>() {
-                }.getType());
-            } catch (Exception e) {
-                e.printStackTrace();
+            if (regions == null || regions.size() == 0) {
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    if (!jsonObject.getString("status").equals("ok"))
+                        return false;
+                    JSONArray jsonArray = jsonObject.getJSONArray("city_info");
+                    if (jsonArray.length() == 0)
+                        return false;
+                    Gson gson = new Gson();
+                    regions = gson.fromJson(jsonArray.toString(), new TypeToken<List<Region>>() {
+                    }.getType());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
 
             for (Region region : regions) {
@@ -113,5 +121,44 @@ public class Utility {
             return true;
         }
         return false;
+    }
+
+    public static void handleWeatherResponse(Context context, String response) {
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            JSONObject weatherInfo = jsonObject.getJSONArray("HeWeather data service 3.0").getJSONObject(0);
+
+            JSONObject basicInfo = weatherInfo.getJSONObject("basic");
+            JSONObject updateInfo = basicInfo.getJSONObject("update");
+            JSONObject dailyForecastInfo = weatherInfo.getJSONArray("daily_forecast").getJSONObject(0);
+            JSONObject nowInfo = weatherInfo.getJSONObject("now");
+            JSONObject condInfo = nowInfo.getJSONObject("cond");
+
+
+            String cityName = basicInfo.getString("city");
+            String publishTime = updateInfo.getString("loc").split(" ")[1];
+            JSONObject maxMinTmp = dailyForecastInfo.getJSONObject("tmp");
+            String temp1 = maxMinTmp.getString("max");
+            String temp2 = maxMinTmp.getString("min");
+            String weatherDesp = condInfo.getString("txt");
+            String weatherCode = condInfo.getString("code");
+            saveWeatherInfo(context, cityName, weatherCode, temp1, temp2, weatherDesp, publishTime);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void saveWeatherInfo(Context context, String cityName, String weatherCode, String temp1, String temp2, String weatherDesp, String publishTime) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy年M月d日", Locale.CHINA);
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
+        editor.putBoolean("city_selected", true);
+        editor.putString("city_name", cityName);
+        editor.putString("weather_code", weatherCode);
+        editor.putString("temp1", temp1);
+        editor.putString("temp2", temp2);
+        editor.putString("weather_desp", weatherDesp);
+        editor.putString("publish_time", publishTime);
+        editor.putString("current_date", sdf.format(new Date()));
+        editor.commit();
     }
 }
