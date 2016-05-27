@@ -141,19 +141,19 @@ public class Utility {
             String temp1 = maxMinTmp.getString("max");
             String temp2 = maxMinTmp.getString("min");
             String weatherDesp = condInfo.getString("txt");
-            String weatherCode = condInfo.getString("code");
-            saveWeatherInfo(context, cityName, weatherCode, temp1, temp2, weatherDesp, publishTime);
+            String countyCode = basicInfo.getString("id").substring(5, 11);
+            saveWeatherInfo(context, cityName, countyCode, temp1, temp2, weatherDesp, publishTime);
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    public static void saveWeatherInfo(Context context, String cityName, String weatherCode, String temp1, String temp2, String weatherDesp, String publishTime) {
+    public static void saveWeatherInfo(Context context, String cityName, String countyCode, String temp1, String temp2, String weatherDesp, String publishTime) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy年M月d日", Locale.CHINA);
         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
         editor.putBoolean("city_selected", true);
         editor.putString("city_name", cityName);
-        editor.putString("weather_code", weatherCode);
+        editor.putString("county_code", countyCode);
         editor.putString("temp1", temp1);
         editor.putString("temp2", temp2);
         editor.putString("weather_desp", weatherDesp);
