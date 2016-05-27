@@ -42,7 +42,10 @@ public class Utility {
             HashMap<String, String> provinceMap = new HashMap<>();
             for (Region region : regions) {
                 if (!provinceMap.containsKey(region.getId().substring(5, 7))) {
-                    provinceMap.put(region.getId().substring(5, 7), region.getProv());
+                    if (region.getProv().equals("直辖市") || region.getProv().equals("特别行政区"))
+                        provinceMap.put(region.getId().substring(5, 7), region.getCity());
+                    else
+                        provinceMap.put(region.getId().substring(5, 7), region.getProv());
                 }
             }
 
@@ -78,7 +81,7 @@ public class Utility {
             }
 
             for (Region region : regions) {
-                if (region.getId().substring(9, 11).equals("01") && region.getId().substring(5, 7).equals(code)) {
+                if ((region.getId().substring(9, 11).equals("01") || region.getId().substring(7, 11).equals("0100")) && region.getId().substring(5, 7).equals(code)) {
                     City city = new City();
                     city.setCityCode(region.getId().substring(5, 9));
                     city.setCityName(region.getCity());
@@ -110,7 +113,7 @@ public class Utility {
             }
 
             for (Region region : regions) {
-                if (region.getId().substring(5, 9).equals(code)) {
+                if (region.getId().substring(5, 9).equals(code) || (region.getId().substring(9, 11).equals("00") && region.getId().substring(5, 7).equals(code.substring(0, 2)))) {
                     County county = new County();
                     county.setCountyCode(region.getId().substring(5, 11));
                     county.setCountyName(region.getCity());
